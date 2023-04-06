@@ -7,9 +7,8 @@ import { Request, Response } from "express";
 class ProductController {
     async findProducts(req: Request, res: Response) {
         try {
-            console.log('QUERY', req.query);
-            console.log('BODY', req.body);
-            // const user = await ProductService.findProducts(req.body);
+            const { page, limit } = req.query;
+            const resut = await ProductService.findProducts({ ...req.body, page, limit });
             res.status(200).json({});
         } catch (error: unknown) {
             console.log('ERROR AT FINDING PRODUCTS', error);

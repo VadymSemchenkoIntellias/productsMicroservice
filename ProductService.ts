@@ -75,7 +75,37 @@ const DUMMY_DATA = [
 
 class ProductService {
 
-    async findProducts({ page, perPage, owners, priceAbove, priceBeyond, title, company }: any) {
+    async findProducts({ page, limit, owners, priceAbove, priceBelow, title, company }: any) {
+        console.log('OWNERS', owners);
+
+
+
+        try {
+            const filter = {
+                $and: [
+                    {
+                        owner: { $regex: owners.join('|'), $options: 'i' }
+                    },
+                    {
+                        price: {
+                            $gte: priceAbove,
+                            $lte: priceBelow
+                        }
+                    }
+                ],
+            };
+            const products = await Product.find(filter)
+                .limit(limit)
+                .skip((page - 1) * limit)
+                .exec();
+
+            const count = await Product.count();
+            console.log('PRODUCTS', products);
+            console.log('RESPONSE', products.length);
+            console.log('TOTAL', count);
+        } catch (error) {
+
+        }
         // const invalidCredentailReasons = [!email, !password, !name, !company, !validateEmail(email), !validatePassword(password)];
         // const invalidCredentailReasonIndex = invalidCredentailReasons.findIndex(reason => reason);
         // if (invalidCredentailReasonIndex !== -1) {
