@@ -18,7 +18,7 @@ app.use((_, res) => {
 async function startApp() {
     try {
         app.listen(process.env.PORT, async () => {
-            await mongoose.connect('mongodb+srv://semchenko:a00190019@cluster0.xpyrdb8.mongodb.net/?retryWrites=true&w=majority');
+            await mongoose.connect('mongodb+srv://vadym:a00190019@cluster0.dycb7b9.mongodb.net/?retryWrites=true&w=majority');
             console.log('APP STARTED');
         });
     } catch (e) {
