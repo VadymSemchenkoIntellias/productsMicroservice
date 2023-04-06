@@ -76,10 +76,6 @@ const DUMMY_DATA = [
 class ProductService {
 
     async findProducts({ page, limit, owners, priceAbove, priceBelow, title, company }: any) {
-        console.log('OWNERS', owners);
-
-
-
         try {
             const filter = {
                 $and: [
@@ -91,6 +87,16 @@ class ProductService {
                             $gte: priceAbove,
                             $lte: priceBelow
                         }
+                    },
+                    {
+                        title: {
+                            $eq: title,
+                        }
+                    },
+                    {
+                        company: {
+                            $eq: company
+                        }
                     }
                 ],
             };
@@ -99,12 +105,13 @@ class ProductService {
                 .skip((page - 1) * limit)
                 .exec();
 
-            const count = await Product.count();
-            console.log('PRODUCTS', products);
-            console.log('RESPONSE', products.length);
-            console.log('TOTAL', count);
+            const count = await Product.count(filter);
+            return {
+                products,
+                count
+            }
         } catch (error) {
-
+            console.log('ERROR', error);
         }
         // const invalidCredentailReasons = [!email, !password, !name, !company, !validateEmail(email), !validatePassword(password)];
         // const invalidCredentailReasonIndex = invalidCredentailReasons.findIndex(reason => reason);
