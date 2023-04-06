@@ -5,7 +5,8 @@ const Product = new mongoose.Schema({
     title: { type: String, required: true },
     company: { type: String, required: true },
     count: { type: Number, required: true },
-    currency: { type: String, required: true }
+    currency: { type: String, required: true },
+    price: { type: Number, required: true }
 })
 
 export default mongoose.model('Product', Product);

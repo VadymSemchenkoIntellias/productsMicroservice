@@ -12,6 +12,7 @@ class ProductController {
             // const user = await ProductService.findProducts(req.body);
             res.status(200).json({});
         } catch (error: unknown) {
+            console.log('ERROR AT FINDING PRODUCTS', error);
             // let status;
             // switch ((error as ResponseError).code) {
             //     case ErrorCode.EMAIL_ALREADY_REGISTERED:
