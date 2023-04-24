@@ -1,5 +1,6 @@
 import Product from "./models/Product";
 import ResponseError, { ErrorCode } from './error';
+import axios from 'axios';
 
 // const DUMMY_DATA = [
 //     {
@@ -72,44 +73,91 @@ import ResponseError, { ErrorCode } from './error';
 class ProductService {
 
     async findProducts(args: {
-        page: number, limit: number, owners: string[], priceAbove: number, priceBelow: number, title: string, company: number
+        page: number, limit: number, owners: string[], priceAbove: number, priceBelow: number, title: string, company: number, accessToken: string
     }
     ) {
-        const { page, limit, owners, priceAbove, priceBelow, title, company } = args;
-        if ([!page, !limit, !owners, !priceAbove, !priceBelow, !title, !company].some(reason => reason)) {
-            throw new ResponseError(ErrorCode.BAD_REQUEST, 'Bad request');
-        }
-        const filter = {
-            $and: [
-                {
-                    owner: { $regex: owners.join('|'), $options: 'i' }
-                },
+        const { page, limit, owners, priceAbove, priceBelow, title, company, accessToken } = args;
+
+        // if ([!page, !limit, !owners, !priceAbove, !priceBelow, !title, !company].some(reason => reason)) {
+        //     console.log('BAD REQUEST')
+        //     throw new ResponseError(ErrorCode.BAD_REQUEST, 'Bad request');
+        // }
+        const filters: any[] = [];
+        if (owners) {
+            filters.push({
+                owner: { $regex: owners.join('|'), $options: 'i' }
+            })
+        };
+        if (priceAbove) {
+            filters.push(
                 {
                     price: {
                         $gte: priceAbove,
+                        // $lte: priceBelow
+                    }
+                },
+            )
+        };
+        if (priceBelow) {
+            filters.push(
+                {
+                    price: {
                         $lte: priceBelow
                     }
                 },
-                {
-                    title: {
-                        $eq: title,
-                    }
-                },
-                {
-                    company: {
-                        $eq: company
-                    }
+            );
+        };
+        if (title) {
+            filters.push({
+                title: {
+                    $eq: title,
                 }
-            ],
+            });
+        };
+        if (company) {
+            filters.push({
+                company: {
+                    $eq: company
+                }
+            });
+        }
+
+        const filter = {
+            $and: filters,
         };
         const products = await Product.find(filter)
             .limit(limit)
             .skip((page - 1) * limit)
             .exec();
 
+        const productsOwnersIds = Array.from(new Set(products.map(({ owner: ownerId }) => ownerId)));
+
+
+        const ownerInfoDictionary: Record<string, { id: string, email: string }> = {};
+
+
+        // await Promise.all(productsOwnersIds.map(async ownerId => {
+        //     const { data: ownerInfo } = await axios.get(`http://localhost:5001/user/getUserDataById/${ownerId}`, {
+        //         headers: {
+        //             Authorization: `Bearer ${accessToken}`
+        //         }
+        //     });
+        //     ownerInfoDictionary[ownerId] = ownerInfo as unknown as { id: string, email: string };
+        // }));
+
         const count = await Product.count(filter);
+
+        const productsWithOwnerInfo = products.map((item, index) => {
+            return ({
+                ...item.toObject(),
+                // owner: {
+                //     id: ownerInfoDictionary[item.owner].id,
+                //     email: ownerInfoDictionary[item.owner].email
+                // }
+            })
+        });
         return {
-            products,
+            products: productsWithOwnerInfo,
             count
         }
     }
