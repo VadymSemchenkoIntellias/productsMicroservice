@@ -20,6 +20,7 @@ async function startApp() {
         app.listen(process.env.PORT, async () => {
             await mongoose.connect('mongodb+srv://vadym:a00190019@cluster0.dycb7b9.mongodb.net/?retryWrites=true&w=majority');
         });
+        // await ProductService._migrateProducts();
     } catch (e) {
         console.log(e);
     }

@@ -1,5 +1,5 @@
 import Product from "./models/Product";
-import ResponseError, { ErrorCode } from './error';
+import ProductSummary from "./models/ProductSummary";
 import axios from 'axios';
 
 // const DUMMY_DATA = [
@@ -72,16 +72,47 @@ import axios from 'axios';
 
 class ProductService {
 
+    // async _migrateProducts() {
+    //     try {
+    //         const allProducts = await Product.find();
+    //         // console.log('ALL PRODCUTS', allProducts);
+    //         const productsOwnersIds = Array.from(new Set(allProducts.map(({ owner: ownerId }) => ownerId)));
+
+
+    //         const ownerInfoDictionary: Record<string, { id: string, email: string }> = {};
+
+    //         // TODO: make user resource
+
+    //         await Promise.all(productsOwnersIds.map(async ownerId => {
+    //             const { data: ownerInfo } = await axios.get(`http://localhost:5001/user/getUserDataById/${ownerId}`, {
+    //                 withCredentials: true,
+    //                 auth: {
+    //                     username: 'products-mircoservice',
+    //                     password: '123456'
+    //                 }
+    //             });
+    //             ownerInfoDictionary[ownerId] = ownerInfo as unknown as { id: string, email: string, name: string };
+    //         }));
+    //         const productSummary = allProducts.map((product, index) => {
+    //             if (index === 0) {
+    //                 console.log('PRODUCT ITEM', product);
+    //             }
+    //             return ({ ...(product.toJSON()), owner: ownerInfoDictionary[product.owner] })
+    //         });
+    //         console.log('PRODUCT SUMMARY', productSummary[0]);
+    //         await ProductSummary.create(productSummary);
+    //     } catch (error) {
+    //         console.log('ERROR AT MIGRATING PRODUCTS', error);
+    //     }
+
+    // }
+
     async findProducts(args: {
-        page: number, limit: number, owners: string[], priceAbove: number, priceBelow: number, title: string, company: number, accessToken: string
+        page: number, limit: number, owners: string[], priceAbove: number, priceBelow: number, title: string, company: number
     }
     ) {
-        const { page, limit, owners, priceAbove, priceBelow, title, company, accessToken } = args;
+        const { page, limit, owners, priceAbove, priceBelow, title, company } = args;
 
-        // if ([!page, !limit, !owners, !priceAbove, !priceBelow, !title, !company].some(reason => reason)) {
-        //     console.log('BAD REQUEST')
-        //     throw new ResponseError(ErrorCode.BAD_REQUEST, 'Bad request');
-        // }
         const filters: any[] = [];
         if (owners) {
             filters.push({
@@ -93,7 +124,6 @@ class ProductService {
                 {
                     price: {
                         $gte: priceAbove,
-                        // $lte: priceBelow
                     }
                 },
             )
@@ -135,25 +165,29 @@ class ProductService {
 
         const ownerInfoDictionary: Record<string, { id: string, email: string }> = {};
 
+        // TODO: make user resource
 
-        // await Promise.all(productsOwnersIds.map(async ownerId => {
-        //     const { data: ownerInfo } = await axios.get(`http://localhost:5001/user/getUserDataById/${ownerId}`, {
-        //         headers: {
-        //             Authorization: `Bearer ${accessToken}`
-        //         }
-        //     });
-        //     ownerInfoDictionary[ownerId] = ownerInfo as unknown as { id: string, email: string };
-        // }));
+        await Promise.all(productsOwnersIds.map(async ownerId => {
+            const { data: ownerInfo } = await axios.get(`http://localhost:5001/user/getUserDataById/${ownerId}`, {
+                withCredentials: true,
+                auth: {
+                    username: 'products-mircoservice',
+                    password: '123456'
+                }
+            });
+            ownerInfoDictionary[ownerId] = ownerInfo as unknown as { id: string, email: string, name: string };
+        }));
 
         const count = await Product.count(filter);
 
         const productsWithOwnerInfo = products.map((item, index) => {
             return ({
                 ...item.toObject(),
-                // owner: {
-                //     id: ownerInfoDictionary[item.owner].id,
-                //     email: ownerInfoDictionary[item.owner].email
-                // }
+                owner: {
+                    id: ownerInfoDictionary[item.owner].id,
+                    email: ownerInfoDictionary[item.owner].email,
+                    // name: ownerInfoDictionary[item.owner].name
+                }
             })
         });
         return {
