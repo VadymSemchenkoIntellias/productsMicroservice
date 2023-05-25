@@ -1,13 +1,15 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const Owner = new mongoose.Schema({
+
+
+const OwnerSchema = new Schema({
     email: { type: String, required: true },
     name: { type: String, required: true },
     id: { type: String, required: true }
-})
+});
 
-const ProductSummary = new mongoose.Schema({
-    owner: Owner,
+const ProductSummarySchema = new Schema({
+    owner: { type: OwnerSchema, required: true },
     title: { type: String, required: true },
     company: { type: String, required: true },
     count: { type: Number, required: true },
@@ -15,4 +17,6 @@ const ProductSummary = new mongoose.Schema({
     price: { type: Number, required: true }
 });
 
-export default mongoose.model('ProductSummary', ProductSummary);
+const ProductSummary = model('ProductSummary', ProductSummarySchema);
+
+export default ProductSummary;

@@ -7,13 +7,18 @@ class ProductController {
     async findProducts(req: Request, res: Response) {
         try {
             const { page, limit } = req.query;
-            const { authorization } = req.headers;
-            // if (!authorization) {
-            //     res.status(403).json({ message: 'No authorization header provided' });
-            // }
-            // const [_, accessToken] = (authorization as string).split(' ');
-            // const result = await ProductService.findProducts({ ...req.body, page, limit, accessToken });
             const result = await ProductService.findProducts({ ...req.body, page, limit });
+            res.status(200).json(result);
+        } catch (error: unknown) {
+            const status = ErrorResponseStatusMap[(error as ResponseError).code] || 500;
+            res.status(status).json({ code: (error as ResponseError).code });
+        }
+    }
+
+    async updateOwner(req: Request, res: Response) {
+        try {
+            // const { id, name, email } = req.body;
+            const result = await ProductService.updateOwner({ ...req.body.data, id: req.body.data._id });
             res.status(200).json(result);
         } catch (error: unknown) {
             const status = ErrorResponseStatusMap[(error as ResponseError).code] || 500;

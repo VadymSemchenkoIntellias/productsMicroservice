@@ -163,7 +163,7 @@ class ProductService {
         const productsOwnersIds = Array.from(new Set(products.map(({ owner: ownerId }) => ownerId)));
 
 
-        const ownerInfoDictionary: Record<string, { id: string, email: string }> = {};
+        const ownerInfoDictionary: Record<string, { id: string, email: string, name: string }> = {};
 
         // TODO: make user resource
 
@@ -186,13 +186,25 @@ class ProductService {
                 owner: {
                     id: ownerInfoDictionary[item.owner].id,
                     email: ownerInfoDictionary[item.owner].email,
-                    // name: ownerInfoDictionary[item.owner].name
+                    name: ownerInfoDictionary[item.owner].name
                 }
             })
         });
         return {
             products: productsWithOwnerInfo,
             count
+        }
+    }
+
+    async updateOwner({ id, name, email }: { id: string; name: string; email: string }) {
+        console.log('ID', id);
+        console.log('NAME', name);
+        console.log('EMAIL', email);
+        try {
+            const result = await ProductSummary.updateMany({ 'owner.id': id }, { 'owner.name': name, 'owner.email': email }, { new: true });
+            console.log('RESULT', result);
+        } catch (error) {
+            console.log('ERROR AT UPDATING', error);
         }
     }
 

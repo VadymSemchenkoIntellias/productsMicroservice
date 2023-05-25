@@ -1,7 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 
-import { router } from "./router";
+import { router as productsRouter } from "./productsRouter";
+import { router as webHooksRouter } from "./webHooksRouter";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -9,7 +10,8 @@ const app = express();
 
 
 app.use(express.json());
-app.use('/products', router);
+app.use('/products', productsRouter);
+app.use('/webhooks', webHooksRouter);
 app.use((_, res) => {
     res.sendStatus(404);
 })
