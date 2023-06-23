@@ -10,7 +10,10 @@ class ProductController {
             const result = await ProductService.findProducts({ ...req.body, page, limit });
             res.status(200).json(result);
         } catch (error: unknown) {
+            // @ts-ignore
+            console.log('ERROR AT FIND PRODUCTS', error.message);
             const status = ErrorResponseStatusMap[(error as ResponseError).code] || 500;
+            console.log('STATUS', status);
             res.status(status).json({ code: (error as ResponseError).code });
         }
     }
